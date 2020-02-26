@@ -36,10 +36,10 @@ const tasks = [
 (function(arrOfTasks) {
   const objOfTasks = arrOfTasks.reduce((acc, task) => {
     acc[task._id] = task;
+  
     return acc;
   }, {});
 
-  //Elements UI
   const listContainer = document.querySelector('.tasks-list-section .list-group');
   const form = document.forms['addTask'];
   const inputTitle = form.elements['title'];
@@ -47,6 +47,7 @@ const tasks = [
 
   renderAllTasks(objOfTasks);
   form.addEventListener('submit', onFormSubmit);
+  listContainer.addEventListener('click', onDelete);
 
   function renderAllTasks(taskList) {
     if (!taskList) {
@@ -66,6 +67,7 @@ const tasks = [
   function listItemTemplate({ _id, title, body} = {}) {
     const li = document.createElement('li');
     li.classList.add('list-group-item', 'd-flex', 'align-items-center', 'flex-wrap', 'mt-2');
+    li.setAttribute('data-task-id', _id);
 
     const span = document.createElement('span');
     span.textContent = title;
@@ -94,6 +96,7 @@ const tasks = [
 
     if (!titleValue || !bodyValue) {
       alert('Please, enter the text in the indicated fields');
+
       return;
     }
 
@@ -101,6 +104,7 @@ const tasks = [
     const listItem = listItemTemplate(task);
 
     listContainer.insertAdjacentElement('afterbegin', listItem);
+
     form.reset();
   }
 
@@ -115,6 +119,37 @@ const tasks = [
     objOfTasks[newTask._id] = newTask;
 
     return { ...newTask };
+  }
+
+  function isDeleteTask(id) {
+    const { title } = objOfTasks[id];
+    const isConfirm = confirm(`Delete task: ${title}?`);
+
+    if (!isConfirm) {
+      return isConfirm;
+    }
+
+    delete objOfTasks[id];
+
+    return isConfirm;
+  }
+
+  function deleteTask(confirmed, element) {
+    if (!confirmed) {
+      return;
+    }
+
+    element.remove();
+  }
+
+  function onDelete({ target }) {
+    if (target.classList.contains('delete-btn')) {
+      const parent = target.closest('[data-task-id]');
+      const id = parent.dataset.taskId;
+      const confirmed = isDeleteTask(id);
+
+      deleteTask(confirmed, parent);
+    }
   }
 
 })(tasks);
