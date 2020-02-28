@@ -3,7 +3,7 @@
 const tasks = [
   {
     _id: '5d2ca9e2e03d40b326596aa7',
-    completed: true,
+    completed: false,
     body:
       'Occaecat non ea quis occaecat ad culpa amet deserunt incididunt elit fugiat pariatur. Exercitation commodo culpa in veniam proident laboris in. Excepteur cupidatat eiusmod dolor consectetur exercitation nulla aliqua veniam fugiat irure mollit. Eu dolor dolor excepteur pariatur aute do do ut pariatur consequat reprehenderit deserunt.\r\n',
     title: 'Eu ea incididunt sunt consectetur fugiat non.',
@@ -18,7 +18,7 @@ const tasks = [
   },
   {
     _id: '5d2ca9e2e03d40b3232496aa7',
-    completed: true,
+    completed: false,
     body:
       'Occaecat non ea quis occaecat ad culpa amet deserunt incididunt elit fugiat pariatur. Exercitation commodo culpa in veniam proident laboris in. Excepteur cupidatat eiusmod dolor consectetur exercitation nulla aliqua veniam fugiat irure mollit. Eu dolor dolor excepteur pariatur aute do do ut pariatur consequat reprehenderit deserunt.\r\n',
     title: 'Eu ea incididunt sunt consectetur fugiat non.',
@@ -84,9 +84,9 @@ const tasks = [
     },
     light: {
       '--base-text-color': '#212529',
-      '--header-bg': '#fff',
+      '--header-bg': 'silver',
       '--header-text-color': '#212529',
-      '--default-btn-bg': '#fff',
+      '--default-btn-bg': 'silver',
       '--default-btn-text-color': '#212529',
       '--default-btn-hover-bg': '#e8e7e7',
       '--default-btn-border-color': '#343a40',
@@ -110,12 +110,14 @@ const tasks = [
   const inputTitle = form.elements['title'];
   const inputBody = form.elements['body'];
   const themeSelect = document.getElementById('themeSelect');
+  const info = document.querySelector('.card-info');
 
   setTheme(lastSelectedTheme);
   renderAllTasks(objOfTasks);
   form.addEventListener('submit', onFormSubmit);
   listContainer.addEventListener('click', onDelete);
   themeSelect.addEventListener('change', onThemeSelect);
+  listContainer.addEventListener('click', onCompleted);
 
   function renderAllTasks(taskList) {
     if (!taskList) {
@@ -130,6 +132,13 @@ const tasks = [
     });
 
     listContainer.appendChild(fragment);
+    updateInfo();
+  }
+
+  function updateInfo() {
+    const unfinishedTask = Object.values(objOfTasks).filter(task => !task.completed);
+
+    info.innerHTML = `Tasks left ${unfinishedTask.length} of ${Object.values(objOfTasks).length}`;
   }
 
   function listItemTemplate({ _id, title, body} = {}) {
@@ -143,13 +152,23 @@ const tasks = [
 
     const deleteBtn = document.createElement('button');
     deleteBtn.textContent = 'Delete task';
-    deleteBtn.classList.add('btn', 'btn-danger', 'ml-auto', 'delete-btn');
+    deleteBtn.classList.add('btn', 'btn-danger', 'delete-btn');
+
+    const lableBtn = document.createElement('label');
+    lableBtn.classList.add('btn', 'btn-secondary');
+
+    const complideBtn = document.createElement('input');
+    complideBtn.classList.add('checkbox');
+    complideBtn.setAttribute('type', 'checkbox');
+    // complideBtn.setAttribute('autocomplete', 'off');
 
     const article = document.createElement('p');
     article.textContent = body;
     article.classList.add('mt-2', 'w-100');
 
+    lableBtn.appendChild(complideBtn);
     li.appendChild(span);
+    li.appendChild(lableBtn);
     li.appendChild(deleteBtn);
     li.appendChild(article);
 
@@ -185,6 +204,7 @@ const tasks = [
     };
 
     objOfTasks[newTask._id] = newTask;
+    updateInfo();
 
     return { ...newTask };
   }
@@ -198,6 +218,7 @@ const tasks = [
     }
 
     delete objOfTasks[id];
+    updateInfo();
 
     return isConfirm;
   }
@@ -240,6 +261,18 @@ const tasks = [
     Object.entries(selectedThemeObj).forEach(([key, value]) => {
       document.documentElement.style.setProperty(key, value);
     });
+  }
+
+  function onCompleted({ target }) {
+    if (target.classList.contains('checkbox')) {
+      const parent = target.closest('[data-task-id]');
+      parent.classList.toggle('active-bg');
+      const id = parent.dataset.taskId;
+
+      objOfTasks[id].completed = target.checked;
+
+      updateInfo();
+    }
   }
 
 })(tasks);
